@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+require __DIR__ . '/../vendor/autoload.php';
+
+use MichielGerritsen\GraphqlToDto\Container;
+use Symfony\Component\Console\Application;
+
+$container = new Container();
+
+$application = new Application();
+
+$application->add($container->make(\MichielGerritsen\GraphqlToDto\Generator::class));
+
+$application->run();
+

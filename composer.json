@@ -1,0 +1,20 @@
+{
+    "name": "michielgerritsen/graphql-to-dto",
+    "description": "Generate DTO's from a GraphQL endpoint",
+    "authors": [
+        {
+            "name": "Michiel Gerritsen",
+            "email": "michiel@controlaltdelete.nl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MichielGerritsen\\GraphqlToDto\\": "src/"
+        }
+    },
+    "require": {
+        "illuminate/container": "^8.11",
+        "symfony/console": "^5.1",
+        "nette/php-generator": "^3.4"
+    }
+}

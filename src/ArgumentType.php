@@ -40,6 +40,10 @@ class ArgumentType
             $kind = $definition['type']['ofType']['kind'];
         }
 
+        if ($kind == 'LIST' && $definition['type']['ofType']['kind'] == 'SCALAR') {
+            return $this->createScalarList($definition);
+        }
+
         if ($kind == 'LIST') {
             return $this->createList($variableName, $definition);
         }
@@ -128,6 +132,15 @@ class ArgumentType
         return new ArgumentTypeDTO(
             $class,
             $class,
+            null
+        );
+    }
+
+    private function createScalarList(array $definition)
+    {
+        return new ArgumentTypeDTO(
+            'array',
+            'string[]',
             null
         );
     }

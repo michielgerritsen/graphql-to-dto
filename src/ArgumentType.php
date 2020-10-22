@@ -19,7 +19,6 @@
 namespace MichielGerritsen\GraphqlToDto;
 
 use MichielGerritsen\GraphqlToDto\DTO\ArgumentType as ArgumentTypeDTO;
-use Nette\PhpGenerator\PhpNamespace;
 
 class ArgumentType
 {
@@ -100,6 +99,10 @@ class ArgumentType
 
         if (!$type) {
             $type = 'string';
+        }
+
+        if ($type == 'boolean') {
+            $type = 'bool';
         }
 
         return new ArgumentTypeDTO(

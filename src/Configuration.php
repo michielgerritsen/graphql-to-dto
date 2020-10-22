@@ -71,7 +71,7 @@ class Configuration
     {
         $namespace = str_replace(['//', '/'], '\\', $namespace);
 
-        $this->namespace = '\\' . trim($namespace, '\\') . '\\';
+        $this->namespace = trim($namespace, '\\') . '\\';
     }
 
     /**

@@ -48,6 +48,11 @@ class DtoGenerator
     private $argumentType;
 
     /**
+     * @var FromArray
+     */
+    private $fromArray;
+
+    /**
      * @var Configuration
      */
     private $configuration;
@@ -57,12 +62,21 @@ class DtoGenerator
      */
     private $output;
 
+    /**
+     * @var Converter
+     */
+    private $converter;
+
     public function __construct(
         ArgumentType $argumentType,
-        Configuration $configuration
+        FromArray $fromArray,
+        Configuration $configuration,
+        Converter $converter
     ) {
         $this->argumentType = $argumentType;
         $this->configuration = $configuration;
+        $this->fromArray = $fromArray;
+        $this->converter = $converter;
     }
 
     public function setOutput(OutputInterface $output)
@@ -82,6 +96,7 @@ class DtoGenerator
 
         $class = $namespace->addClass($definition['name']);
         $constructor = $class->addMethod('__construct');
+        $this->fromArray->generate($definition['fields'], $class->addMethod('fromArray'));
 
         foreach ($definition['fields'] as $field) {
             $this->addField($class, $field);
@@ -90,7 +105,7 @@ class DtoGenerator
         $body = [];
         $useValidation = false;
         foreach ($this->constructorArguments as $name => $type) {
-            $name = $this->camelCase($name, false);
+            $name = $this->converter->camelCase($name, false);
             $constructor->addParameter($name)->setType($type->getConstructorTypeHint());
             $body[] = '$this->' . $name . ' = $' . $name . ';';
 
@@ -121,26 +136,15 @@ class DtoGenerator
             return;
         }
 
-        $variableName = $this->camelCase($field['name'], false);
+        $variableName = $this->converter->camelCase($field['name'], false);
         $type = $this->argumentType->calculate($variableName, $field);
 
         $class->addProperty($variableName)->setComment(PHP_EOL . '@var ' . $type->getGetterReturnType() . PHP_EOL);
-        $method = $class->addMethod('get' . $this->camelCase($field['name']));
+        $method = $class->addMethod('get' . $this->converter->camelCase($field['name']));
         $method->setBody('return $this->' . $variableName . ';');
         $method->setComment('@return ' . $type->getGetterReturnType());
         $method->setReturnType($type->getConstructorTypeHint());
 
         $this->constructorArguments[$field['name']] = $type;
-    }
-
-    private function camelCase(string $string, bool $capitalizeFirstCharacter = true)
-    {
-        $result = str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
-
-        if (!$capitalizeFirstCharacter) {
-            $result[0] = strtolower($result[0]);
-        }
-
-        return $result;
     }
 }

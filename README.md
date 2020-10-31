@@ -40,4 +40,5 @@ This method is not perfect and may have some rough edges, always check the gener
 - Add a static `fromArray` method to initiate the DTO's faster.
 - Support for Enums.
 - Ignore/allowlist wich calculates the required dependencies.
+- Correct fragments handling
 - Tests, tests, tests.

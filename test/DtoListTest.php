@@ -59,7 +59,7 @@ class DtoListTest extends TestCase
     {
         $root = vfsStream::setup('root');
         $file = vfsStream::newFile('blocklist.json')->at($root)->withContent(json_encode([
-            'testEntity' => [
+            'TestEntity' => [
                 'ignoredField',
             ]
         ]));
@@ -90,7 +90,7 @@ class DtoListTest extends TestCase
     {
         $root = vfsStream::setup('root');
         $file = vfsStream::newFile('blocklist.json')->at($root)->withContent(json_encode([
-            'testEntity' => [
+            'TestEntity' => [
                 '*',
             ]
         ]));

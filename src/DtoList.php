@@ -50,7 +50,7 @@ class DtoList
 
     private function removeBlockedEntities($entity): bool
     {
-        $name = $this->converter->camelCase($entity['name'], false);
+        $name = $this->converter->camelCase($entity['name']);
         $blockList = $this->configuration->getBlockList();
         if (!isset($blockList[$name])) {
             return true;
@@ -65,7 +65,7 @@ class DtoList
 
     private function removeBlockedFields($entity): array
     {
-        $name = $this->converter->camelCase($entity['name'], false);
+        $name = $this->converter->camelCase($entity['name']);
         $blockList = $this->configuration->getBlockList();
         if (!isset($blockList[$name])) {
             return $entity;

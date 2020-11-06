@@ -87,5 +87,7 @@ class Generator extends Command
         foreach ($this->dtoList->build($result['types']) as $type) {
             $this->dtoGenerator->generate($type);
         }
+
+        return 0;
     }
 }

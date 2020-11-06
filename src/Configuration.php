@@ -41,6 +41,11 @@ class Configuration
     private $folder = '';
 
     /**
+     * @var array|null
+     */
+    private $blockList = null;
+
+    /**
      * @return string
      */
     public function getEndpoint(): string
@@ -104,5 +109,35 @@ class Configuration
     public function setFolder(string $folder): void
     {
         $this->folder = $folder;
+    }
+
+    public function getBlockList(): ?array
+    {
+        return $this->blockList;
+    }
+
+    public function setBlockList(?string $blockList): void
+    {
+        if (!$blockList) {
+            return;
+        }
+
+        $this->blockList = $this->parseList($blockList);
+    }
+
+    private function parseList($filename)
+    {
+        if (!file_exists($filename) || !is_readable($filename)) {
+            throw new \Exception(sprintf('File "%s" does not exists or is not readable', $filename));
+        }
+
+        $contents = file_get_contents($filename);
+        $result = json_decode($contents, true);
+
+        if (json_last_error() != JSON_ERROR_NONE) {
+            throw new \Exception(sprintf('The file "%s" does not contain valid JSON', $filename));
+        }
+
+        return $result;
     }
 }

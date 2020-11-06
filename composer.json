@@ -12,9 +12,18 @@
             "MichielGerritsen\\GraphqlToDto\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "MichielGerritsen\\GraphqlToDto\\Test\\": "test/"
+        }
+    },
     "require": {
         "illuminate/container": "^8.11",
         "symfony/console": "^5.1",
         "nette/php-generator": "^3.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.4",
+        "mikey179/vfsstream": "^1.6"
     }
 }

@@ -31,6 +31,7 @@ class Container
     {
         $this->container = new iocContainer();
         $this->container->singleton(Configuration::class);
+        $this->container->singleton(DefinitionLibrary::class);
     }
 
     public function make(string $class)

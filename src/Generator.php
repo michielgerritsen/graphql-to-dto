@@ -46,11 +46,17 @@ class Generator extends Command
      */
     private $dtoList;
 
+    /**
+     * @var DefinitionLibrary
+     */
+    private $definitionLibrary;
+
     public function __construct(
         Introspection $introspection,
         DtoGenerator $dtoGenerator,
         Configuration $configuration,
-        DtoList $dtoList
+        DtoList $dtoList,
+        DefinitionLibrary $definitionLibrary
     ) {
         parent::__construct();
 
@@ -58,6 +64,7 @@ class Generator extends Command
         $this->dtoGenerator = $dtoGenerator;
         $this->configuration = $configuration;
         $this->dtoList = $dtoList;
+        $this->definitionLibrary = $definitionLibrary;
     }
 
     protected function configure()
@@ -66,7 +73,7 @@ class Generator extends Command
         $this->setDescription('Run the DTO generator');
         $this->addArgument('endpoint', InputArgument::REQUIRED, 'The endpoint that contains as a source for the DTO generator');
         $this->addArgument('namespace', InputArgument::REQUIRED, 'What (PHP) namespace should be used?');
-        $this->addArgument('blocklist', InputArgument::OPTIONAL, 'Provide a blocklist');
+        $this->addOption('blocklist', 'b', InputArgument::OPTIONAL, 'Provide a blocklist');
         // TODO
 //        $this->addArgument('folder', InputArgument::REQUIRED, 'To what folder should we output the generated DTO\'s?');
         $this->addOption('include-deprecated', 'd', InputOption::VALUE_OPTIONAL, 'Include deprecated arguments?', false);
@@ -78,13 +85,15 @@ class Generator extends Command
         $this->configuration->setNamespace($input->getArgument('namespace'));
 //        $this->configuration->setFolder($input->getArgument('folder'));
         $this->configuration->setUseDeprecated($input->getOption('include-deprecated'));
-        $this->configuration->setBlockList($input->getArgument('blocklist'));
+        $this->configuration->setBlockList($input->getOption('blocklist'));
 
         $output->writeln('<info>Reading ' . $this->configuration->getEndpoint() . '</info>');
         $result = $this->introspection->run();
 
         $this->dtoGenerator->setOutput($output);
-        foreach ($this->dtoList->build($result['types']) as $type) {
+        $list = $this->dtoList->build($result['types']);
+        $this->definitionLibrary->setDefinition($list);
+        foreach ($list as $type) {
             $this->dtoGenerator->generate($type);
         }
 

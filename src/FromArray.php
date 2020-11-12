@@ -42,12 +42,19 @@ class FromArray
      */
     private $converter;
 
+    /**
+     * @var DefinitionLibrary
+     */
+    private $definitionLibrary;
+
     public function __construct(
         Configuration $configuration,
-        Converter $converter
+        Converter $converter,
+        DefinitionLibrary $definitionLibrary
     ) {
         $this->configuration = $configuration;
         $this->converter = $converter;
+        $this->definitionLibrary = $definitionLibrary;
     }
 
     public function generate($fields, Method $method)
@@ -120,13 +127,18 @@ class FromArray
             $class = $field['type']['ofType']['ofType']['name'];
         }
 
+        $this->arguments[] = '$' . $name;
+
+        $objectDefinition = $this->definitionLibrary->get($class);
+        if ($objectDefinition && $objectDefinition['kind'] == 'INTERFACE') {
+            return $this->createInterfaceList($field['name'], $objectDefinition);
+        }
+
         $this->arrayTypes[] = '$' . $name . ' = [];
 foreach ($data[\'' . $field['name'] . '\'] as $subData) {
     $' . $name . '[] = ' . $class . '::fromArray($subData);
 }
         ';
-
-        $this->arguments[] = '$' . $name;
     }
 
     private function createObject($field)
@@ -147,5 +159,25 @@ foreach ($data[\'' . $field['name'] . '\'] as $subData) {
     private function createScalarList($field)
     {
         $this->arguments[] = '$data[\'' . $field['name'] . '\']';
+    }
+
+    private function createInterfaceList($name, ?array $objectDefinition)
+    {
+        $argumentName = $this->converter->camelCase($name, false);
+        $code = '$' . $argumentName . ' = [];
+/*foreach ($data[\'' . $name . '\'] as $subData) {
+    // Add your own logic to determine which ' . $objectDefinition['name'] . ' implementation you need:
+    ';
+
+        foreach ($objectDefinition['possibleTypes'] as $type) {
+            $code .= '$' . $name . '[] = ' . $type['name'] . '::fromArray($subData);
+    ';
+        }
+
+    $code = trim($code) . '
+}*/
+        ';
+
+        $this->arrayTypes[] = $code;
     }
 }

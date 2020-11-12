@@ -38,11 +38,6 @@ class DtoGenerator
     ];
 
     /**
-     * @var ArgumentTypeDTO[]
-     */
-    private $constructorArguments = [];
-
-    /**
      * @var ArgumentType
      */
     private $argumentType;
@@ -67,16 +62,37 @@ class DtoGenerator
      */
     private $converter;
 
+    /**
+     * @var ClassImplements
+     */
+    private $classImplements;
+
+    /**
+     * @var GenerateInterface
+     */
+    private $generateInterface;
+
+    /**
+     * @var GenerateClass
+     */
+    private $generateClass;
+
     public function __construct(
         ArgumentType $argumentType,
         FromArray $fromArray,
         Configuration $configuration,
-        Converter $converter
+        Converter $converter,
+        ClassImplements $classImplements,
+        GenerateInterface $generateInterface,
+        GenerateClass $generateClass
     ) {
         $this->argumentType = $argumentType;
         $this->configuration = $configuration;
         $this->fromArray = $fromArray;
         $this->converter = $converter;
+        $this->classImplements = $classImplements;
+        $this->generateInterface = $generateInterface;
+        $this->generateClass = $generateClass;
     }
 
     public function setOutput(OutputInterface $output)
@@ -94,32 +110,7 @@ class DtoGenerator
         $this->output->writeln(sprintf('Generating DTO for type "%s"', $definition['name']));
         $namespace = new PhpNamespace(trim($this->configuration->getNamespace(), '\\'));
 
-        $class = $namespace->addClass($definition['name']);
-        $constructor = $class->addMethod('__construct');
-        $this->fromArray->generate($definition['fields'], $class->addMethod('fromArray'));
-
-        foreach ($definition['fields'] as $field) {
-            $this->addField($class, $field);
-        }
-
-        $body = [];
-        $useValidation = false;
-        foreach ($this->constructorArguments as $name => $type) {
-            $name = $this->converter->camelCase($name, false);
-            $constructor->addParameter($name)->setType($type->getConstructorTypeHint());
-            $body[] = '$this->' . $name . ' = $' . $name . ';';
-
-            if ($type->getConstructorValidation()) {
-                $useValidation = true;
-                array_unshift($body, $type->getConstructorValidation());
-            }
-        }
-
-        if ($useValidation) {
-            $namespace->addUse('Assert\Assertion');
-        }
-
-        $constructor->setBody(implode(PHP_EOL, $body));
+        $this->getObject($namespace, $definition);
 
         $printer = new PsrPrinter;
 
@@ -130,21 +121,12 @@ class DtoGenerator
         );
     }
 
-    private function addField(ClassType $class, $field)
+    private function getObject(PhpNamespace $namespace, array $definition): ClassType
     {
-        if ($field['isDeprecated'] && !$this->configuration->useDeprecated()) {
-            return;
+        if ($definition['kind'] == 'INTERFACE') {
+            return $this->generateInterface->generate($namespace, $definition);
         }
 
-        $variableName = $this->converter->camelCase($field['name'], false);
-        $type = $this->argumentType->calculate($variableName, $field);
-
-        $class->addProperty($variableName)->setComment(PHP_EOL . '@var ' . $type->getGetterReturnType() . PHP_EOL);
-        $method = $class->addMethod('get' . $this->converter->camelCase($field['name']));
-        $method->setBody('return $this->' . $variableName . ';');
-        $method->setComment('@return ' . $type->getGetterReturnType());
-        $method->setReturnType($type->getConstructorTypeHint());
-
-        $this->constructorArguments[$field['name']] = $type;
+        return $this->generateClass->generate($namespace, $definition);
     }
 }

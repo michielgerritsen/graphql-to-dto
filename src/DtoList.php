@@ -74,7 +74,8 @@ class DtoList
         $blockedFields = $blockList[$name];
 
         $fields = array_filter($entity['fields'], function ($field) use ($blockedFields) {
-            return !in_array($field['name'], $blockedFields);
+            return !in_array($field['name'], $blockedFields) &&
+                !in_array($this->converter->camelCase($field['name'], false), $blockedFields);
         });
 
         $entity['fields'] = array_values($fields);
